@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=povrayJob
 #SBATCH --array=0-5
-#SBATCH --partition=long
+#SBATCH --partition=short
 
 cd /tmp/
 v='RAC'${SLURM_ARRAY_TASK_ID}
