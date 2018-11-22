@@ -28,7 +28,7 @@ public class StylePhrase {
 			word.set(itr.nextToken());
 			String txt = word.toString();
 			i++;
-			if(txt.contains(".")) break;
+			//if(txt.contains(".")) break;
       }
 		
 	  context.write(new Text("phrase"), new IntWritable(i));
@@ -42,10 +42,15 @@ public class StylePhrase {
     public void reduce(Text key, Iterable<IntWritable> values, Context context ) throws IOException, InterruptedException {
 		
 	  int max = 0;
+	  int moy = 0;
+	  int n = 0;
       for (IntWritable val : values) {
+		  moy += val.get();
+		  n++;
 		  if(max < val.get())
 			max = val.get();
       }
+      moy /= n;
       result.set(max);
       context.write(key, result);
     }
@@ -54,7 +59,8 @@ public class StylePhrase {
   public static void main(String[] args) throws Exception {
 	  
     Configuration conf = new Configuration();
-    Job job = Job.getInstance(conf, "anagrammes counter");
+    conf.set("textinputformat.record.delimiter", ". ");
+    Job job = Job.getInstance(conf, "Style phrase");
     
     job.setJarByClass(StylePhrase.class);
     job.setMapperClass(StylePhraseMapper.class);
