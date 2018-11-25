@@ -14,6 +14,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 
+/*
+ * 	YOUSSEF NIDABRAHIM
+ *  ZZ3 - F2
+ * 
+ * 	MAP/REDUCE PATTERN FOR COUNTING ANAGRAMMES 
+ */
+
+
 
 public class Anagrammes {
 

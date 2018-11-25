@@ -15,43 +15,55 @@ import java.util.Set;
 import java.util.Map;
 
 
+/*
+ * 	YOUSSEF NIDABRAHIM
+ *  ZZ3 - F2
+ * 
+ * 	MAP/REDUCE PATTERN FOR CALCULATING MAXIMUM AND AVERAGE WORDS PER SENTENCE 
+ */
+
+
 public class StylePhrase {
 
-  public static class StylePhraseMapper extends Mapper<Object, Text, Text, IntWritable>{
+  public static class StylePhraseMapper extends Mapper<Object, Text, Text, CustomMaxAverageTuple>{
+	  
+	private CustomMaxAverageTuple tuple = new CustomMaxAverageTuple();
+	private Text sentence = new Text("Sentence");
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 		
 	  StringTokenizer itr = new StringTokenizer(value.toString());
-      int i = 0;
-      Text word = new Text();
+      long wordCounter = 0;
       while (itr.hasMoreTokens()) {
-			word.set(itr.nextToken());
-			String txt = word.toString();
-			i++;
-			//if(txt.contains(".")) break;
+			wordCounter++;
       }
+      tuple.setAverage(wordCounter);
+      tuple.setMax(wordCounter);
+      tuple.setCount(wordCounter);
 		
-	  context.write(new Text("phrase"), new IntWritable(i));
+	  context.write(sentence, tuple);
     }
   }
 
-  public static class StylePhraseReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+  public static class StylePhraseReducer extends Reducer<Text,CustomMaxAverageTuple,Text,CustomMaxAverageTuple> {
 	  
-	private IntWritable result = new IntWritable();
+	private CustomMaxAverageTuple result = new CustomMaxAverageTuple();
 
-    public void reduce(Text key, Iterable<IntWritable> values, Context context ) throws IOException, InterruptedException {
+    public void reduce(Text key, Iterable<CustomMaxAverageTuple> values, Context context ) throws IOException, InterruptedException {
 		
 	  int max = 0;
 	  int moy = 0;
-	  int n = 0;
-      for (IntWritable val : values) {
-		  moy += val.get();
-		  n++;
-		  if(max < val.get())
-			max = val.get();
+	  int wordCounter = 0;
+	  int sentenceCounter = 0;
+      for (CustomMaxAverageTuple tuple : values) {
+		  sentenceCounter++;
+		  wordCounter = wordCounter + tuple.getCount();
+		  result.setCount(wordCounter);
+		  if(tuple.getMax() > result.getMax())
+			result.setMax(tuple.getMax());
       }
-      moy /= n;
-      result.set(max);
+      result.setAverage(result.getCount()/sentenceCounter);
+
       context.write(key, result);
     }
   }
@@ -60,13 +72,13 @@ public class StylePhrase {
 	  
     Configuration conf = new Configuration();
     conf.set("textinputformat.record.delimiter", ". ");
-    Job job = Job.getInstance(conf, "Style phrase");
+    Job job = Job.getInstance(conf, "Style sentences");
     
     job.setJarByClass(StylePhrase.class);
     job.setMapperClass(StylePhraseMapper.class);
     job.setReducerClass(StylePhraseReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputValueClass(CustomMaxAverageTuple.class);
     
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));

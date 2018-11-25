@@ -15,6 +15,14 @@ import java.util.Set;
 import java.util.Map;
 
 
+/*
+ * 	YOUSSEF NIDABRAHIM
+ *  ZZ3 - F2
+ * 
+ * 	MAP/REDUCE PATTERN FOR COUNTING WORDS
+ */
+
+
 public class WordCount {
 
   public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
@@ -31,14 +39,11 @@ public class WordCount {
       while (itr.hasMoreTokens()) {
 			word.set(itr.nextToken());
 			String txt = word.toString();
-			//Minuscule
 			txt = txt.toLowerCase();
-			//Ponctuation !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
 			txt = txt.replaceAll("\p{Punct}", "");
 			//txt = txt.replaceAll("[^a-zA-Z\\p{L}]", " ");
 			word.set(txt);
 			context.write(word, one);
-		  
       }
     }
   }
@@ -60,14 +65,15 @@ public class WordCount {
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job = Job.getInstance(conf, "word count");
+    
     job.setJarByClass(WordCount.class);
     job.setMapperClass(TokenizerMapper.class);
-//    job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
 }
